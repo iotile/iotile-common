@@ -1,5 +1,3 @@
-import { NgZone } from '@angular/core';
-
 /*
  * Classes for reporting progress about complex
  * multistep operations.
@@ -16,14 +14,14 @@ export class ProgressNotifier {
 
     }
 
-    public startOne(desc: string, subparts: number) : ProgressNotifier | null {
+    public startOne(desc: string, subparts: number) : ProgressNotifier {
         return null;
     }
 
     public setTotal(total: number) {
     }
 
-    public addMessage(severity: MessageSeverity, message: string) {
+    public addMessage(severity: MessageSeverity, message: string, priority: boolean = false) {
     }
 
     public fatalError(message: string) {
@@ -32,6 +30,10 @@ export class ProgressNotifier {
 
     public updateDescription(desc: string) {
 
+    }
+
+    public get hasErrors(): boolean {
+        return false;
     }
 }
 
@@ -48,7 +50,7 @@ export class TaskProgressNotifier extends ProgressNotifier {
         this.manager.finishTask();
     }
 
-    public startOne(desc: string, subparts: number) : ProgressNotifier | null {
+    public startOne(desc: string, subparts: number) : ProgressNotifier {
         return this.manager.startTask(desc, subparts);
     }
 
@@ -61,12 +63,16 @@ export class TaskProgressNotifier extends ProgressNotifier {
         this.manager.totalTasks = total;
     }
 
-    public addMessage(severity: MessageSeverity, message: string) {
-        this.manager.addMessage(severity, message);
+    public addMessage(severity: MessageSeverity, message: string, priority: boolean = false) {
+        this.manager.addMessage(severity, message, priority);
     }
 
     public fatalError(message: string) {
         this.manager.fatalError(message);
+    }
+
+    public get hasErrors(): boolean {
+        return this.manager.hasErrors;
     }
 }
 
@@ -92,8 +98,8 @@ export class SubTaskProgressNotifier extends ProgressNotifier {
         this.manager.subTaskTotal = total;   
     }
 
-    public addMessage(severity: MessageSeverity, message: string) {
-        this.manager.addMessage(severity, message);
+    public addMessage(severity: MessageSeverity, message: string, priority: boolean = false) {
+        this.manager.addMessage(severity, message, priority);
     }
 
     public fatalError(message: string) {
@@ -109,7 +115,15 @@ export class SubTaskProgressNotifier extends ProgressNotifier {
 export enum MessageSeverity {
     Info = 0,
     Warn = 1,
-    Error = 2
+    Error = 2,
+    Success = 3
+}
+
+export enum UISeverity {
+    Info = 'info',
+    Warn = 'warn',
+    Error = 'error',
+    Success = 'success'
 }
 
 export class OperationMessage {
@@ -122,12 +136,18 @@ export class OperationMessage {
     } 
 
     public get iconClass() : string {
-        if (this.severity == MessageSeverity.Info) {
-            return 'ion-information-circled balanced';
-        } else if (this.severity == MessageSeverity.Warn) {
+        switch (this.severity) {
+            case MessageSeverity.Info:
+            return 'ion-information-circled positive';
+
+            case MessageSeverity.Warn:
             return 'ion-alert-circled energized';
-        } else {
+
+            case MessageSeverity.Error:
             return 'ion-minus-circled assertive';
+
+            case MessageSeverity.Success:
+            return 'ion-checkmark-circled balanced';
         }
     }
 }
@@ -138,16 +158,17 @@ export class ProgressManager {
 
     public subTaskTotal: number;
     public subTaskFinished: number;
-    public subTaskDescription: string | null;
-    public subSubTaskDescription: string | null;
+    public subTaskDescription: string;
+    public subSubTaskDescription: string;
     public subTaskInProgress: boolean;
 
+    public priorityMessage: OperationMessage;
     public messages: OperationMessage[];
 
-    private scope: NgZone;
+    private scope;
     private errorState: boolean;
 
-    constructor(totalTasks: number, NgZone: NgZone) {
+    constructor(totalTasks: number, $scope) {
         this.totalTasks = totalTasks;
         this.finishedTasks = 0;
 
@@ -161,7 +182,7 @@ export class ProgressManager {
 
         //If we need to autoupdate some bindings on a scope
         //by triggering a digest cycle
-        this.scope = NgZone;
+        this.scope = $scope;
     }
 
     public clear() {
@@ -172,6 +193,7 @@ export class ProgressManager {
         this.subTaskFinished = 0;
         this.subTaskInProgress = false;
 
+        this.priorityMessage = undefined;
         this.messages = [];
         this.errorState = false;
     }
@@ -180,9 +202,9 @@ export class ProgressManager {
         return new TaskProgressNotifier(this);
     }
 
-    public startTask(desc: string, totalParts: number) : ProgressNotifier | null {
+    public startTask(desc: string, totalParts: number) : ProgressNotifier {
         if (this.errorState) {
-            return null;
+            return;
         }
 
         this.subTaskTotal = totalParts;
@@ -214,8 +236,12 @@ export class ProgressManager {
         this.updateScope();
     }
 
-    public addMessage(severity: MessageSeverity, message: string) {
-        this.messages.push(new OperationMessage(severity, message));
+    public addMessage(severity: MessageSeverity, message: string, priority: boolean = false) {
+        if (priority){
+            this.priorityMessage = new OperationMessage(severity, message);
+        } else {
+            this.messages.push(new OperationMessage(severity, message));
+        }
     }
 
     public fatalError(message: string) {
@@ -252,7 +278,7 @@ export class ProgressManager {
 
     public updateScope() {
         if (this.scope) {
-            this.scope.run(() => undefined);
+            this.scope.$applyAsync();
         }
     }
 }

@@ -7,7 +7,7 @@ export interface ControllerOptions {
 }
 
 export class ControllerBase extends ObjectBase {
-    protected $scope: ng.IScope;
+    protected $scope;
     protected $ionicLoading;
     protected $ionicPopup;
     protected $ionicHistory;

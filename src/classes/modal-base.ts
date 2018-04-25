@@ -94,7 +94,7 @@ export class ModalBase extends ControllerBase {
             that.modal.show().then(async function() {
                 try {
                     if (that.customController != null) {
-                        await that.customController.initialize(...args);
+                        await that.customController.initialize();
                     } else {
                         await that.initialize();
                     }

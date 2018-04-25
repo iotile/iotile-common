@@ -1,5 +1,5 @@
 import {base64ToArrayBuffer} from "./utilities";
-import CryptoJS = require('crypto-js');
+import * as CryptoJS from 'crypto-js';
 
 /**
  * A helper class for calculating and verifying SHA256 signatures

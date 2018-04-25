@@ -16,11 +16,11 @@ import {ArgumentError, InsufficientSpaceError} from "./app-errors";
  * Check if a string ends with another string
  *
  *
- * @param string str The input string
- * @param string suffix The suffix to check
- * @returns boolean Whether the string ends with the suffix
+ * @param {string} str The input string
+ * @param {string} suffix The suffix to check
+ * @returns {bool} Whether the string ends with the suffix
  */
-export function endsWith(str:string, suffix:string): boolean {
+export function endsWith(str:string, suffix:string) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
 
@@ -31,11 +31,11 @@ export function endsWith(str:string, suffix:string): boolean {
  * Check if a string ends with another string
  *
  *
- * @param string str The input string
- * @param string prefix The prefix to check
- * @returns boolean Whether the string ends with the suffix
+ * @param {string} str The input string
+ * @param {string} prefix The prefix to check
+ * @returns {bool} Whether the string ends with the suffix
  */
-export function startsWith(str:string, prefix:string): boolean {
+export function startsWith(str:string, prefix:string) {
     return str.indexOf(prefix, 0) == 0;
 }
 
@@ -54,7 +54,7 @@ export function joinPath(path1: string, path2: string) {
 //From https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export function guid() : string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        let r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
         return v.toString(16);
     });
 }
@@ -68,8 +68,8 @@ export function guid() : string {
  * This function wraps setTimeout in a promise API that can be
  * used with async/await.
  *
- * @param number delayMS - The number of milliseconds to wait
- * @returns Promise A promise that is fullfilled after delayMS milliseconds
+ * @param {number} delayMS - The number of milliseconds to wait
+ * @returns {Promise} A promise that is fullfilled after delayMS milliseconds
  */
 export function delay(delayMS: number) {
     return new Promise<void>(resolve => {
@@ -93,11 +93,11 @@ export function delay(delayMS: number) {
  *
  * The slug always has the hex string in lowercase.
  * 
- * @param number deviceID - The device ID to convert into a slug
- * @returns string The corresponding device slug
+ * @param {number} deviceID - The device ID to convert into a slug
+ * @returns {string} The corresponding device slug
  */
 
-export function deviceIDToSlug(deviceID: number): string {
+export function deviceIDToSlug(deviceID: number) {
     let hexString = Number(deviceID).toString(16);
     
     while (hexString.length < 16) {
@@ -121,11 +121,11 @@ export function deviceIDToSlug(deviceID: number): string {
  * The slug always has the hex string in lowercase.  The device id is converted
  * into the XXXX portion and the streamer is converted to the YYYY portion.
  * 
- * @param number deviceID - The device ID to convert into a slug
- * @param number streamer - The streamer index to convert into a slug
- * @returns string The corresponding streamer slug
+ * @param {number} deviceID - The device ID to convert into a slug
+ * @param {number} streamer - The streamer index to convert into a slug
+ * @returns {string} The corresponding streamer slug
  */
-export function createStreamerSlug(deviceID: number, streamer: number): string {
+export function createStreamerSlug(deviceID: number, streamer: number) {
     let deviceString = numberToHexString(deviceID, 16);
     let streamerString = numberToHexString(streamer, 4);
 
@@ -145,11 +145,11 @@ export function createStreamerSlug(deviceID: number, streamer: number): string {
  *
  * The slug always has the hex string in lowercase.
  * 
- * @param number inputNumber - The number to convert to a hex string
- * @param number length - The number of hex digits to pad out to.
- * @returns string The correspond lowercase hex string
+ * @param {number} inputNumber - The number to convert to a hex string
+ * @param {number} length - The number of hex digits to pad out to.
+ * @returns {string} The correspond lowercase hex string
  */
-export function numberToHexString(inputNumber: number, length: number): string {
+export function numberToHexString(inputNumber: number, length: number) {
     let hexString = Number(inputNumber).toString(16);
     
     while (hexString.length < length) {
@@ -169,11 +169,11 @@ export function numberToHexString(inputNumber: number, length: number): string {
  * This function converts string like 'output 1' into 16 bit integers
  * like 0x5001.  
  *
- * @param string streamName - The string name of the variable that you want to convert
- * @returns number The numerical stream identifier
+ * @param {string} streamName - The string name of the variable that you want to convert
+ * @returns {number} The numerical stream identifier
  */
-export function mapStreamName(streamName: string): number {
-    let knownStreams: {[key: string]: number} = {
+export function mapStreamName(streamName: string) {
+    var knownStreams = {
     'buffered node': 0,
     'unbuffered node': 1,
     'constant': 2,
@@ -182,21 +182,21 @@ export function mapStreamName(streamName: string): number {
     'output': 5
     };
 
-    let system = 0;
-    let parts = streamName.split(' ');
+    var system = 0;
+    var parts = streamName.split(' ');
     if (parts[0] === 'system') {
     system = 1;
     parts = parts.slice(1);
     }
 
-    let name = parts.slice(0, parts.length - 1).join(' ');
-    let id = parseInt(parts[parts.length - 1]);
+    var name = parts.slice(0, parts.length - 1).join(' ');
+    var id = parseInt(parts[parts.length - 1]);
 
     if (!(name in knownStreams)) {
         throw new ArgumentError('Unknown stream name: ' + name);
     }
 
-    let streamType = knownStreams[name];
+    var streamType = knownStreams[name];
 
     return (streamType << 12) | (system << 11) | id;
 }
@@ -216,14 +216,14 @@ export function mapStreamName(streamName: string): number {
  * 
  * {@link Utilities.function:unpackArrayBuffer Utilities.unpackArrayBuffer}
  *
- * @param string fmt - The format we are trying to determine the size of 
- * @returns [FormatCode] A list of the parsed format codes that were extracted
+ * @param {string} fmt - The format we are trying to determine the size of 
+ * @returns {[FormatCode]} A list of the parsed format codes that were extracted
  *     from the input format string.
  */
 export function parseBufferFormatCode(fmt: string) {
-    let parsed = []
-    let i;
-    let count = 0; //For accumulating counts like 18s
+    var parsed = []
+    var i;
+    var count = 0; //For accumulating counts like 18s
     
     //Calculate expected size
     for (i = 0; i < fmt.length; ++i) {
@@ -294,10 +294,10 @@ export function parseBufferFormatCode(fmt: string) {
  * @description
  * Pad a string by appended a given character until it reaches a fixed length
  * 
- * @param string input The string we are trying to pad.
- * @param string pad The padding character to add.
- * @param number length The length of the final string you want.  
- * @returns string The correctly padded string.
+ * @param {string} input The string we are trying to pad.
+ * @param {string} pad The padding character to add.
+ * @param {number} length The length of the final string you want.  
+ * @returns {string} The correctgly padded string.
  */
 
 export function padString(input: string, pad: string, length: number) : string {
@@ -336,14 +336,14 @@ export function padString(input: string, pad: string, length: number) : string {
  * 
  * {@link Utilities.function:unpackArrayBuffer Utilities.unpackArrayBuffer}
  *
- * @param string fmt - The format we are trying to determine the size of 
- * @returns number The number of bytes required to store fmt
+ * @param {string} fmt - The format we are trying to determine the size of 
+ * @returns {number} The number of bytes required to store fmt
  */
-export function expectedBufferSize(fmt: string): number {
-    let size = 0;
-    let parsed = parseBufferFormatCode(fmt);
-    let i;
-    let count = 0; //For accumulating counts like 18s
+export function expectedBufferSize(fmt: string) {
+    var size = 0;
+    var parsed = parseBufferFormatCode(fmt);
+    var i;
+    var count = 0; //For accumulating counts like 18s
     
     //Calculate expected size
     for (i = 0; i < parsed.length; ++i) {
@@ -379,47 +379,63 @@ export function expectedBufferSize(fmt: string): number {
  * - **{@link type:ArgumentError} If there is an unknown format string code or the string
  *   does not match the number or type of arguments received.
  *
- * @param string fmt The format string specifying the size of each argument
- * @param number[] arguments A variable list of numberic arguments that are packed to
+ * @param {string} fmt The format string specifying the size of each argument
+ * @param {number[]} arguments A variable list of numberic arguments that are packed to
  * 							   create the resulting ArrayBuffer according to fmt.
- * @returns ArrayBuffer The packed resulting binary array buffer
+ * @returns {ArrayBuffer} The packed resulting binary array buffer
  */
-export function packArrayBuffer (fmt: string, ...args: any[]): ArrayBuffer {
-    let parsed = parseBufferFormatCode(fmt);
-    let size = expectedBufferSize(fmt);
+export function packArrayBuffer (fmt: string, ...args: any[]) {
+    var parsed = parseBufferFormatCode(fmt);
+    var size = expectedBufferSize(fmt);
 
     if (arguments.length !== (parsed.length + 1)) {
         throw new ArgumentError('packArrayBuffer called with the wrong number of arguments for the format string');
     }
 
-    let arrayBuffer = new ArrayBuffer(size);
-    let view = new DataView(arrayBuffer);
+    var arrayBuffer = new ArrayBuffer(size);
+    var view = new DataView(arrayBuffer);
 
     //Fill in all the data (always little endian format)
-    let offset = 0;
+    var offset = 0;
     for (let i = 0; i < parsed.length; ++i) {
         let curr = parsed[i];
         let arg = arguments[i + 1];
 
         switch (curr.code) {
             case 'B':
-            view.setUint8(offset, arguments[i + 1]);
-            offset += 1;
+            if ((arguments[i + 1] <= 0xFF) && (arguments[i + 1] >= 0)){
+                view.setUint8(offset, arguments[i + 1]);
+                offset += 1;
+            } else {
+                throw new ArgumentError("Value must be a valid unsigned 8 bit integer");
+            }
             break;
 
             case 'H':
-            view.setUint16(offset, arguments[i + 1], true);
-            offset += 2;
+            if ((arguments[i + 1] <= 0xFFFF) && (arguments[i + 1] >= 0)){
+                view.setUint16(offset, arguments[i + 1], true);
+                offset += 2;
+            } else {
+                throw new ArgumentError("Value must be a valid unsigned 16 bit integer");
+            }
             break;
 
             case 'L':
-            view.setUint32(offset, arguments[i + 1], true);
-            offset += 4;
+            if ((arguments[i + 1] <= 0xFFFFFFFF) && (arguments[i + 1] >= 0)){
+                view.setUint32(offset, arguments[i + 1], true);
+                offset += 4;
+            } else {
+                throw new ArgumentError("Value must be a valid unsigned 32 bit integer");
+            }
             break;
 
             case 'l':
-            view.setInt32(offset, arguments[i + 1], true);
-            offset += 4;
+            if ((arguments[i + 1] <= 0x7FFFFFFF) && (arguments[i + 1] >= -2147483648)){
+                view.setInt32(offset, arguments[i + 1], true);
+                offset += 4;
+            } else {
+                throw new ArgumentError("Value must be a valid signed 32 bit integer");
+            }
             break;
 
             case 's':
@@ -462,25 +478,25 @@ export function packArrayBuffer (fmt: string, ...args: any[]): ArrayBuffer {
  * - **{@link type:ArgumentError} If there is an unknown format string code or the string
  *   does not match the data contained inside the ArrayBuffer.
  *
- * @param string fmt The format string specifying the size of each argument
- * @param ArrayBuffer buffer The packed ArrayBuffer that should be decoded using fmt
- * @returns number[] A list of numbers decoded from the buffer using fmt
+ * @param {string} fmt The format string specifying the size of each argument
+ * @param {ArrayBuffer} buffer The packed ArrayBuffer that should be decoded using fmt
+ * @returns {number[]} A list of numbers decoded from the buffer using fmt
  */
-export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer): number[] {
-    let size = expectedBufferSize(fmt);
-    let parsed = parseBufferFormatCode(fmt);
-    let i;
+export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
+    var size = expectedBufferSize(fmt);
+    var parsed = parseBufferFormatCode(fmt);
+    var i;
 
     if (size !== buffer.byteLength) {
         throw new ArgumentError('unpackArrayBuffer called on buffer with invalid size');
     }
 
-    let view = new DataView(buffer);
-    let args = [];
+    var view = new DataView(buffer);
+    var args = [];
 
     //Fill in all the data (always little endian format)
-    let offset = 0;
-    let val;
+    var offset = 0;
+    var val;
     for (i = 0; i < parsed.length; ++i) {
         let entry = parsed[i];
         let stringData;
@@ -539,14 +555,14 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer): number[] {
  *   to hold the copied data. This function will not expand the size of the destination buffer, so it must already be allocated 
  *   with enough space for the copied data.
  * 
- * @param ArrayBuffer dest The destination buffer that we should copy into.  There must be enough
+ * @param {ArrayBuffer} dest The destination buffer that we should copy into.  There must be enough
  *   space in dest to hold what you are copying.  This function will not allocate
  *   more space for you.
- * @param ArrayBuffer src  The source buffer to copy from
- * @param number srcOffset The offset in src to start copying from, 0 would mean copy from the beginning
- * @param number destOffset The offset in dest to start copying into, 0 would mean to copy to the beginning
+ * @param {ArrayBuffer} src  The source buffer to copy from
+ * @param {number} srcOffset The offset in src to start copying from, 0 would mean copy from the beginning
+ * @param {number} destOffset The offset in dest to start copying into, 0 would mean to copy to the beginning
  *   of dest.
- * @param number length The number of bytes to copy from src into dest.
+ * @param {number} length The number of bytes to copy from src into dest.
  * @throws {InsufficientSpaceError} If there is not space in the destination buffer to hold the copied data.
  */
 export function copyArrayBuffer(dest: ArrayBuffer, src: ArrayBuffer, srcOffset: number, destOffset: number, length: number) {
@@ -566,14 +582,14 @@ export function copyArrayBuffer(dest: ArrayBuffer, src: ArrayBuffer, srcOffset: 
  * @description
  * Decode a Base 64 encoded string into an ArrayBuffer
  * 
- * @param string encodedString The base 64 encoded string
- * @returns ArrayBuffer The decoded ArrayBuffer
+ * @param {string} encodedString The base 64 encoded string
+ * @returns {ArrayBuffer} The decoded ArrayBuffer
  */
-export function base64ToArrayBuffer(encodedString: string): ArrayBuffer {
-    let raw = window.atob(encodedString);
-    let rawLength = raw.length;
-    let rawArray = new ArrayBuffer(rawLength);
-    let array = new Uint8Array(rawArray);
+export function base64ToArrayBuffer(encodedString: string) {
+    var raw = window.atob(encodedString);
+    var rawLength = raw.length;
+    var rawArray = new ArrayBuffer(rawLength);
+    var array = new Uint8Array(rawArray);
 
     for(let i = 0; i < rawLength; i++) {
         array[i] = raw.charCodeAt(i);

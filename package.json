@@ -1,6 +1,6 @@
 {
   "name": "iotile-common",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Common utilities for IoTile Packages and Applications",
   "main": "src/index.ts",
   "module": "build/module/index.ts",

@@ -2,9 +2,9 @@
   "name": "iotile-common",
   "version": "0.0.3",
   "description": "Common utilities for IoTile Packages and Applications",
-  "main": "src/index.ts",
-  "module": "build/module/index.ts",
-  "types": "build/module/index.d.ts",
+  "main": "build/index.js",
+  "module": "build/index.js",
+  "types": "build/types/index.d.ts",
   "repository": "https://github.com/iotile/iotile-common",
   "license": "MIT",
   "keywords": [
@@ -17,6 +17,9 @@
   "engines": {
     "node": ">=8.9"
   },
+  "files": [
+    "build"
+  ],
   "dependencies": {
     "crypto-js": "^3.1.9-1",
     "sha.js": "^2.4.10"

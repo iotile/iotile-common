@@ -1,12 +1,16 @@
 {
   "name": "iotile-common",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Common utilities for IoTile Packages and Applications",
   "main": "src/index.ts",
-  "module": "src/index.ts",
+  "module": "build/module/index.ts",
+  "types": "build/module/index.d.ts",
   "repository": "https://github.com/iotile/iotile-common",
   "license": "MIT",
-  "keywords": ["typescript", "iotile"],
+  "keywords": [
+    "typescript",
+    "iotile"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

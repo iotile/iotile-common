@@ -1,4 +1,4 @@
-import {ControllerBase} from "./controller-base"
+import {ControllerBase} from "./controller-base";
 
 /**
  * CustomModalBase should be used to create modal controllers
@@ -7,9 +7,9 @@ import {ControllerBase} from "./controller-base"
  */
 
 export class CustomModalBase extends ControllerBase {
-    public modal;
+    public modal: any;
 
-    constructor(name: string, $injector, $scope) {
+    constructor(name: string, $injector: any, $scope: any) {
         super(name, $injector, $scope, {manualInitCleanup: true});
 
         this.modal = null;

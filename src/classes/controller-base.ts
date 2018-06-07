@@ -7,20 +7,20 @@ export interface ControllerOptions {
 }
 
 export class ControllerBase extends ObjectBase {
-    protected $scope;
-    protected $ionicLoading;
-    protected $ionicPopup;
-    protected $ionicHistory;
-    protected $ionicModal;
-    protected $cordovaInAppBrowser;
-    protected net;
+    protected $scope : any;
+    protected $ionicLoading: any;
+    protected $ionicPopup: any;
+    protected $ionicHistory: any;
+    protected $ionicModal: any;
+    protected $cordovaInAppBrowser: any;
+    protected net: any;
 
-    protected currentModal;
+    protected currentModal: any;
 
-    public error: string;
-    public initialized: Promise<void>;
+    public error: string | null;
+    public initialized: Promise<void> | null;
 
-    constructor(name: string, $injector, $scope, options: ControllerOptions = {manualInitCleanup: false}) {
+    constructor(name: string, $injector: any, $scope: any, options: ControllerOptions = {manualInitCleanup: false}) {
         super(name, $injector);
 
         this.$scope = $scope;
@@ -51,14 +51,14 @@ export class ControllerBase extends ObjectBase {
 
         if (options.manualInitCleanup === false) {
             let resolveInitialized: () => void;
-            let rejectInitialized: (any) => void;
+            let rejectInitialized: (any: any) => void;
 
             this.initialized = new Promise<void>((resolve, reject) => {
                 resolveInitialized = resolve;
                 rejectInitialized = reject;
             });
             
-            $scope.$on('$ionicView.beforeEnter', async function(ev) {
+            $scope.$on('$ionicView.beforeEnter', async function(ev: any) {
                 that.error = null;
                 try {
                     await that.initialize();
@@ -84,7 +84,7 @@ export class ControllerBase extends ObjectBase {
         return new Promise<void>(function(resolve, reject) {
             that.$ionicLoading.show(details).then(function () {
                 resolve();
-            }).catch((err) => resolve());
+            }).catch((err: any) => resolve());
         })
     }
 
@@ -95,7 +95,7 @@ export class ControllerBase extends ObjectBase {
         return new Promise<void>(function(resolve, reject) {
             that.$ionicLoading.hide().then(function () {
                 resolve();
-            }).catch((err) => resolve());
+            }).catch((err: any) => resolve());
         })
     }
 
@@ -125,7 +125,7 @@ export class ControllerBase extends ObjectBase {
         return new Promise<void>((resolve, reject) => {
             that.$cordovaInAppBrowser.open(url, '_blank', browserOptions).then(function() {
                 resolve();
-            }).catch(function(err) {
+            }).catch(function(err: any) {
                 reject(err);
             });
         });
@@ -136,7 +136,7 @@ export class ControllerBase extends ObjectBase {
     {
         let that = this;
         return new Promise<void>(function(resolve, reject) {
-            that.$ionicModal.fromTemplateUrl(templateURL, {scope: that.$scope, animation: 'slide-in-up'}).then(function(modal) {
+            that.$ionicModal.fromTemplateUrl(templateURL, {scope: that.$scope, animation: 'slide-in-up'}).then(function(modal: any) {
                 that.currentModal = modal;
                 modal.show().then(function() {
                     resolve();
@@ -215,13 +215,13 @@ export class ControllerBase extends ObjectBase {
                 buttons: [{
                     text: "Cancel",
                     type: "button-assertive",
-                    onTap: function(e) {return false}
+                    onTap: function(e: any) {return false}
                 }, {
                     text: "Okay",
                     type: "button-balanced",
-                    onTap: function(e) {return true}
+                    onTap: function(e: any) {return true}
                 }]
-            }).then(function (res) {
+            }).then(function (res: any) {
                 resolve(res);
             });
         })        

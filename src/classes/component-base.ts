@@ -7,10 +7,10 @@ import {ControllerBase} from "./controller-base";
  */
 
 export class ComponentBase extends ControllerBase {
-    private resolve: () => void;
-    private reject: () => void;
+    private resolve: (() => void) | undefined;
+    private reject: (() => void) | undefined;
 
-    constructor(name: string, $injector, $scope) {
+    constructor(name: string, $injector: any, $scope:any) {
         super(name, $injector, $scope, {manualInitCleanup: true});
         let that = this;
         
@@ -23,10 +23,14 @@ export class ComponentBase extends ControllerBase {
     public async $onInit() {
         try {
             let initialized = await this.initialize();
-            this.resolve();
+            if (this.resolve){
+                this.resolve();
+            }
         } catch(error){
             this.log_error("Unable to initialize component; " + error);
-            this.reject();
+            if (this.reject){
+                this.reject();
+            }
         }
       }
 

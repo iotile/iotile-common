@@ -1,6 +1,6 @@
 {
   "name": "iotile-common",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Common utilities for IoTile Packages and Applications",
   "main": "build/index.js",
   "module": "build/index.js",

@@ -14,7 +14,7 @@ export class ProgressNotifier {
 
     }
 
-    public startOne(desc: string, subparts: number) : ProgressNotifier {
+    public startOne(desc: string, subparts: number) : ProgressNotifier | null {
         return null;
     }
 
@@ -50,7 +50,7 @@ export class TaskProgressNotifier extends ProgressNotifier {
         this.manager.finishTask();
     }
 
-    public startOne(desc: string, subparts: number) : ProgressNotifier {
+    public startOne(desc: string, subparts: number) : ProgressNotifier | null {
         return this.manager.startTask(desc, subparts);
     }
 
@@ -158,17 +158,17 @@ export class ProgressManager {
 
     public subTaskTotal: number;
     public subTaskFinished: number;
-    public subTaskDescription: string;
-    public subSubTaskDescription: string;
+    public subTaskDescription: string | null;
+    public subSubTaskDescription: string | null;
     public subTaskInProgress: boolean;
 
-    public priorityMessage: OperationMessage;
+    public priorityMessage: OperationMessage | undefined;
     public messages: OperationMessage[];
 
-    private scope;
+    private scope: any;
     private errorState: boolean;
 
-    constructor(totalTasks: number, $scope) {
+    constructor(totalTasks: number, $scope: any) {
         this.totalTasks = totalTasks;
         this.finishedTasks = 0;
 
@@ -179,6 +179,7 @@ export class ProgressManager {
         this.subTaskInProgress = false;
 
         this.messages = [];
+        this.errorState = false;
 
         //If we need to autoupdate some bindings on a scope
         //by triggering a digest cycle
@@ -202,9 +203,9 @@ export class ProgressManager {
         return new TaskProgressNotifier(this);
     }
 
-    public startTask(desc: string, totalParts: number) : ProgressNotifier {
+    public startTask(desc: string, totalParts: number) : ProgressNotifier | null {
         if (this.errorState) {
-            return;
+            return null;
         }
 
         this.subTaskTotal = totalParts;

@@ -173,7 +173,7 @@ export function numberToHexString(inputNumber: number, length: number) {
  * @returns {number} The numerical stream identifier
  */
 export function mapStreamName(streamName: string) {
-    var knownStreams = {
+    var knownStreams: {[key: string]: number} = {
     'buffered node': 0,
     'unbuffered node': 1,
     'constant': 2,

@@ -1,9 +1,9 @@
 import {ObjectBase} from "./all-base";
 
 export class ServiceBase extends ObjectBase {
-    public initialized: Promise<void>;
+    public initialized: Promise<void> | null;
 
-    constructor(name: string, $injector) {
+    constructor(name: string, $injector: any) {
         super(name, $injector);
 
         this.initialized = null;

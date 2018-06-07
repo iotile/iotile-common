@@ -10,12 +10,12 @@ export interface ModalOptions {
 }
 
 export class ModalBase extends ControllerBase {
-    private modal;
-    private customController: CustomModalBase;
+    private modal: any;
+    private customController: CustomModalBase | null;
     private templateURL: string;
     private options: ModalOptions;
 
-    constructor(name: string, templateURL: string, $injector, options: ModalOptions) {
+    constructor(name: string, templateURL: string, $injector: any, options: ModalOptions) {
         let $rootScope = $injector.get("$rootScope");
         let $scope = $rootScope.$new();
 
@@ -66,7 +66,7 @@ export class ModalBase extends ControllerBase {
                 animation: this.options.animation,
                 backdropClickToClose: this.options.backdropClickToClose,
                 hardwareBackButtonClose: this.options.hardwareBackButtonClose
-            }).then(function(modal) {
+            }).then(function(modal: any) {
                 that.modal = modal;
 
                 if (that.customController) {
@@ -74,13 +74,13 @@ export class ModalBase extends ControllerBase {
                 }
 
                 resolve();
-            }).catch(function(err) {
+            }).catch(function(err: any) {
                 reject(err);
             });
         });
     }
 
-    public async show(...args) {
+    public async show(...args: any[]) {
         await this.initialized;
 
         let that = this;

@@ -2,12 +2,12 @@ import {ModalBase} from "./modal-base";
 import {ArgumentError} from "../app-errors";
 
 export class DataGatheringModal<ArgsT, ResultT> extends ModalBase {
-    private deferredResolve: (ResultT) => void;
-    private deferredReject: (any) => void;
-    private promise: Promise<ResultT>;
-    protected args: ArgsT;
+    private deferredResolve: ((ResultT: any) => void) | null;
+    private deferredReject: ((any: any) => void) | null;
+    private promise: Promise<ResultT> | undefined;
+    protected args: ArgsT | null;
 
-    constructor($injector, name: string, templateURL: string) {
+    constructor($injector: any, name: string, templateURL: string) {
         super(name, templateURL, $injector, {animation: 'slide-in-up', backdropClickToClose: false, hardwareBackButtonClose: false});
         this.deferredReject = null;
         this.deferredResolve = null;

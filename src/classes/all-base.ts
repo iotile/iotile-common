@@ -4,7 +4,7 @@ export class ObjectBase {
 
     private className: string;
 
-    constructor(name: string, $injector) {
+    constructor(name: string, $injector: any) {
         this.className = name;
         this.$log = $injector.get("$log");
         this.$injector = $injector;

@@ -9,10 +9,46 @@
   "license": "MIT",
   "keywords": [
     "typescript",
-    "iotile"
+    "library",
+    "tslint",
+    "iotile",
+    "iotile-common",
+    "iot"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "build": "tsc --module commonjs --outDir dist/lib && rollup -c rollup.config.ts && typedoc --name iotile-common --out dist/docs --target es6 --theme minimal --mode file src",
+    "start": "rollup -c rollup.config.ts -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
+    "deploy-docs": "ts-node tools/gh-pages-publish",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 30,
+        "functions": 25,
+        "lines": 45,
+        "statements": 40
+      }
+    },
+    "collectCoverage": true,
+    "mapCoverage": true
   },
   "engines": {
     "node": ">=8.9"
@@ -25,10 +61,21 @@
     "sha.js": "^2.4.10"
   },
   "devDependencies": {
+    "@types/crypto-js": "^3.1.40",
+    "@types/jest": "^23.0.0",
+    "@types/node": "^10.3.1",
     "cz-conventional-changelog": "^2.1.0",
     "gh-pages": "^1.0.0",
+    "jest": "^23.1.0",
+    "lodash.camelcase": "^4.3.0",
     "prettier": "^1.10.2",
+    "rollup": "^0.60.1",
+    "rollup-plugin-commonjs": "^9.1.3",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.14.0",
     "standard-version": "^4.0.0",
+    "ts-jest": "^22.4.6",
     "tslint": "^5.4.3",
     "tslint-config-prettier": "^1.8.0",
     "tslint-immutable": "^4.5.1",

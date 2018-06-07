@@ -14,7 +14,7 @@ export type QueuedWaiter = () => void;
 export class BlockingEvent 
 {
     private _set = false;
-    private resolve: QueuedWaiter;
+    private resolve: QueuedWaiter | undefined;
     private event: Promise<void>;
 
     constructor(){
@@ -33,7 +33,9 @@ export class BlockingEvent
     public set()
     {
         this._set = true;
-        this.resolve();   
+        if (this.resolve){
+            this.resolve();   
+        }
     }
 
     public get isSet()

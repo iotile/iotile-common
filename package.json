@@ -1,6 +1,6 @@
 {
   "name": "iotile-common",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Common utilities for IoTile Packages and Applications",
   "main": "dist/index.js",
   "module": "dist/index.js",

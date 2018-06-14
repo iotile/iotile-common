@@ -1,4 +1,4 @@
-import * as Utilities from "../src/iotile-common";
+import * as Utilities from "../src/utilities";
 
 describe('namespace: Utilities, function: delay', function () {
   it('should delay with async/await', async function(done) {

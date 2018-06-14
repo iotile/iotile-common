@@ -1,4 +1,5 @@
-import {delay, Mutex} from "../src/iotile-common";
+import {delay} from "../src/utilities";
+import {Mutex} from "../src/mutex";
 
 describe('module: iotile.app, class: Mutex', function () {
     let mutex: Mutex;

@@ -1,3 +1,4 @@
+//<reference path="../../../../node_modules/@types/crypto-js/index.d.ts"/>
 import {base64ToArrayBuffer} from "./utilities";
 import * as CryptoJS from 'crypto-js';
 

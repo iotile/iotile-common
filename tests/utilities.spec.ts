@@ -30,29 +30,17 @@ describe('namespace: Utilities, function: expectedBufferSize', function () {
   })
 
   it('should create correct buffer sizes with padding bytes', function() {
-  	let size = Utilities.expectedBufferSize("H18x", true);
+  	let size = Utilities.expectedBufferSize("H18x");
     expect(size).toEqual(20);
 
-    size = Utilities.expectedBufferSize("H1x", true);
+    size = Utilities.expectedBufferSize("H1x");
     expect(size).toEqual(3);
 
-    size = Utilities.expectedBufferSize("8x", true);
+    size = Utilities.expectedBufferSize("8x");
     expect(size).toEqual(8);
 
-    size = Utilities.expectedBufferSize("x", true);
-    expect(size).toEqual(1);
-
-    size = Utilities.expectedBufferSize("H18x");
-    expect(size).toEqual(2);
-
-    size = Utilities.expectedBufferSize("H1x");
-    expect(size).toEqual(2);
-
-    size = Utilities.expectedBufferSize("8x");
-    expect(size).toEqual(0);
-
     size = Utilities.expectedBufferSize("x");
-    expect(size).toEqual(0);
+    expect(size).toEqual(1);
   })
 
   it('should calculate correct buffer sizes with string', function() {
@@ -109,7 +97,7 @@ describe('namespace: Utilities, function: unpackArrayBuffer', function () {
   it('should unpack buffers with padding bytes, dropping the padding', function() {
     let data = Uint8Array.from([0, 18, 0, 3, 0, 234, 0]); // Should drop padding bytes even if nonzero
 
-  	let [first, second] = Utilities.unpackArrayBuffer("xB3xHx", data.buffer);
+  	let [first, second] = Utilities.unpackArrayBuffer("xB3xBx", data.buffer);
 
     expect(first).toEqual(18);
     expect(second).toEqual(234);

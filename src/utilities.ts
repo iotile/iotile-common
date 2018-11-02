@@ -220,7 +220,7 @@ export function mapStreamName(streamName: string) {
  * @returns {[FormatCode]} A list of the parsed format codes that were extracted
  *     from the input format string.
  */
-export function parseBufferFormatCode(fmt: string, pad?: boolean) {
+export function parseBufferFormatCode(fmt: string) {
     var parsed = []
     var i;
     var count = 0; //For accumulating counts like 18s
@@ -238,7 +238,7 @@ export function parseBufferFormatCode(fmt: string, pad?: boolean) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'B', size: 1});
+                parsed.push({count: 0, code:'B', size: 1, argumentsConsumed: 1});
                 break;
 
                 case 'H':
@@ -246,7 +246,7 @@ export function parseBufferFormatCode(fmt: string, pad?: boolean) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'H', size: 2});
+                parsed.push({count: 0, code:'H', size: 2, argumentsConsumed: 1});
                 break;
 
                 case 'L':
@@ -254,7 +254,7 @@ export function parseBufferFormatCode(fmt: string, pad?: boolean) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'L', size: 4});
+                parsed.push({count: 0, code:'L', size: 4, argumentsConsumed: 1});
                 break;
 
                 case 'l':
@@ -262,16 +262,12 @@ export function parseBufferFormatCode(fmt: string, pad?: boolean) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'l', size: 4});
+                parsed.push({count: 0, code:'l', size: 4, argumentsConsumed: 1});
                 break;
 
                 case 'x':
-                if (pad){
-                    let size = Math.max(count, 1);
-                    parsed.push({count: count, code:'x', size: size});
-                } else {
-                    parsed.push({count: count, code:'x', size: 0});
-                }
+                let size = Math.max(count, 1);
+                parsed.push({count: count, code:'x', size: size , argumentsConsumed: 0});
                 break;
 
                 case 's':
@@ -279,7 +275,7 @@ export function parseBufferFormatCode(fmt: string, pad?: boolean) {
                     throw new ArgumentError('Invalid count in string that should be prefixed with a count: count = ' + count);
                 }
 
-                parsed.push({count: count, code:'s', size: count});
+                parsed.push({count: count, code:'s', size: count, argumentsConsumed: 1});
                 break;
 
                 default:
@@ -348,15 +344,29 @@ export function padString(input: string, pad: string, length: number) : string {
  * @param {string} fmt - The format we are trying to determine the size of 
  * @returns {number} The number of bytes required to store fmt
  */
-export function expectedBufferSize(fmt: string, pad?: boolean) {
+export function expectedBufferSize(fmt: string): number {
     var size = 0;
-    var parsed = parseBufferFormatCode(fmt, pad);
+    var parsed = parseBufferFormatCode(fmt);
     var i;
     var count = 0; //For accumulating counts like 18s
     
     //Calculate expected size
     for (i = 0; i < parsed.length; ++i) {
         size += parsed[i].size;
+    }
+
+    return size;
+}
+
+export function expectedArraySize(fmt: string): number {
+    var size = 0;
+    var parsed = parseBufferFormatCode(fmt);
+    var i;
+    var count = 0; //For accumulating counts like 18s
+    
+    //Calculate expected size
+    for (i = 0; i < parsed.length; ++i) {
+        size += parsed[i].argumentsConsumed;
     }
 
     return size;
@@ -394,13 +404,13 @@ export function expectedBufferSize(fmt: string, pad?: boolean) {
  * @returns {ArrayBuffer} The packed resulting binary array buffer
  */
 export function packArrayBuffer (fmt: string, ...args: any[]) {
-    var parsed = parseBufferFormatCode(fmt, true);
-    var size = expectedBufferSize(fmt, true);
+    var parsed = parseBufferFormatCode(fmt);
+    var size = expectedBufferSize(fmt);
+    let argsConsumed = expectedArraySize(fmt);
 
-    // FIXME: needs a smart way to account for padding
-    // if (arguments.length !== (parsed.length + 1)) {
-    //     throw new ArgumentError('packArrayBuffer called with the wrong number of arguments for the format string');
-    // }
+    if (arguments.length !== (argsConsumed + 1)) {
+        throw new ArgumentError('packArrayBuffer called with the wrong number of arguments for the format string');
+    }
 
     var arrayBuffer = new ArrayBuffer(size);
     var view = new DataView(arrayBuffer);
@@ -510,10 +520,9 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
     var parsed = parseBufferFormatCode(fmt);
     var i;
 
-    // FIXME: needs a smart way to account for padding
-    // if (size !== buffer.byteLength) {
-    //     throw new ArgumentError('unpackArrayBuffer called on buffer with invalid size');
-    // }
+    if (size !== buffer.byteLength) {
+        throw new ArgumentError('unpackArrayBuffer called on buffer with invalid size');
+    }
 
     var view = new DataView(buffer);
     var args = [];

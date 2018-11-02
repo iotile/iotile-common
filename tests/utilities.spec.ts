@@ -98,9 +98,9 @@ describe('namespace: Utilities, function: unpackArrayBuffer', function () {
   })
 
   it('should unpack buffers with padding bytes, dropping the padding', function() {
-    let data = Uint8Array.from([18, 0, 0, 3, 0, 234, 0]); // Should drop padding bytes even if nonzero
+    let data = Uint8Array.from([0, 18, 0, 3, 0, 234, 0]); // Should drop padding bytes even if nonzero
 
-  	let [first, second] = Utilities.unpackArrayBuffer("B4xHx", data.buffer);
+  	let [first, second] = Utilities.unpackArrayBuffer("xB3xHx", data.buffer);
 
     expect(first).toEqual(18);
     expect(second).toEqual(234);
@@ -134,8 +134,22 @@ describe('namespace: Utilities, function: packArrayBuffer', function () {
   })
 
   it('should pack padding bytes into buffers', function() {
-  	let arrBuff = Utilities.packArrayBuffer("xH2xL", 18, 234);
-    let [first, second] = Utilities.unpackArrayBuffer("xH2xL", arrBuff); //The unpack functionality is checked in a separate unit test
+    let arrBuff = Utilities.packArrayBuffer("H2xL", 18, 234);
+    let [first, second] = Utilities.unpackArrayBuffer("H2xL", arrBuff); //The unpack functionality is checked in a separate unit test
+
+    expect(arrBuff.byteLength).toEqual((2+1+1+4));
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
+
+    arrBuff = Utilities.packArrayBuffer("H2xLx", 18, 234);
+    [first, second] = Utilities.unpackArrayBuffer("H2xLx", arrBuff); //The unpack functionality is checked in a separate unit test
+
+    expect(arrBuff.byteLength).toEqual((1+2+1+1+4));
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
+
+  	arrBuff = Utilities.packArrayBuffer("xH2xL", 18, 234);
+    [first, second] = Utilities.unpackArrayBuffer("xH2xL", arrBuff); //The unpack functionality is checked in a separate unit test
 
     expect(arrBuff.byteLength).toEqual((1+2+1+1+4));
     expect(first).toEqual(18);

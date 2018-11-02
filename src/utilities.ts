@@ -415,7 +415,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
         switch (curr.code) {
             case 'B':
             if ((arguments[arg_idx + 1] <= 0xFF) && (arguments[arg_idx + 1] >= 0)){
-                view.setUint8(offset, arguments[i + 1]);
+                view.setUint8(offset, arguments[arg_idx + 1]);
                 offset += 1;
                 arg_idx += 1;
             } else {
@@ -425,7 +425,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
 
             case 'H':
             if ((arguments[arg_idx + 1] <= 0xFFFF) && (arguments[arg_idx + 1] >= 0)){
-                view.setUint16(offset, arguments[i + 1], true);
+                view.setUint16(offset, arguments[arg_idx + 1], true);
                 offset += 2;
                 arg_idx += 1;
             } else {
@@ -435,7 +435,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
 
             case 'L':
             if ((arguments[arg_idx + 1] <= 0xFFFFFFFF) && (arguments[arg_idx + 1] >= 0)){
-                view.setUint32(offset, arguments[i + 1], true);
+                view.setUint32(offset, arguments[arg_idx + 1], true);
                 offset += 4;
                 arg_idx += 1;
             } else {
@@ -445,7 +445,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
 
             case 'l':
             if ((arguments[arg_idx + 1] <= 0x7FFFFFFF) && (arguments[arg_idx + 1] >= -2147483648)){
-                view.setInt32(offset, arguments[i + 1], true);
+                view.setInt32(offset, arguments[arg_idx + 1], true);
                 offset += 4;
                 arg_idx += 1;
             } else {
@@ -561,7 +561,7 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
             throw new ArgumentError('Unknown format code in packArrayBuffer: ' + fmt[i]);
         }
 
-        if (val){
+        if (val != undefined){
             args.push(val);
         }
     }

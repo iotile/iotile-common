@@ -66,6 +66,15 @@ describe('namespace: Utilities, function: expectedBufferSize', function () {
     expect(size).toEqual(8);
   })
 
+  it('should not allow counts in front of nonstrings/padding bytes', function(done) {
+  	try {
+      let size = Utilities.expectedBufferSize("18H");
+      done.fail("expectedBufferSize did not throw on count in front of nonstring");
+    } catch (err) {
+      done();
+    }
+  })
+
   it('should require counts in front of strings', function(done) {
   	try {
       let size = Utilities.expectedBufferSize("Hs");

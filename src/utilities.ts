@@ -220,7 +220,7 @@ export function mapStreamName(streamName: string) {
  * @returns {[FormatCode]} A list of the parsed format codes that were extracted
  *     from the input format string.
  */
-export function parseBufferFormatCode(fmt: string) {
+export function parseBufferFormatCode(fmt: string, pad?: boolean) {
     var parsed = []
     var i;
     var count = 0; //For accumulating counts like 18s
@@ -263,6 +263,15 @@ export function parseBufferFormatCode(fmt: string) {
                 }
 
                 parsed.push({count: 0, code:'l', size: 4});
+                break;
+
+                case 'x':
+                if (pad){
+                    let size = Math.max(count, 1);
+                    parsed.push({count: count, code:'x', size: size});
+                } else {
+                    parsed.push({count: count, code:'x', size: 0});
+                }
                 break;
 
                 case 's':
@@ -339,9 +348,9 @@ export function padString(input: string, pad: string, length: number) : string {
  * @param {string} fmt - The format we are trying to determine the size of 
  * @returns {number} The number of bytes required to store fmt
  */
-export function expectedBufferSize(fmt: string) {
+export function expectedBufferSize(fmt: string, pad?: boolean) {
     var size = 0;
-    var parsed = parseBufferFormatCode(fmt);
+    var parsed = parseBufferFormatCode(fmt, pad);
     var i;
     var count = 0; //For accumulating counts like 18s
     
@@ -385,56 +394,68 @@ export function expectedBufferSize(fmt: string) {
  * @returns {ArrayBuffer} The packed resulting binary array buffer
  */
 export function packArrayBuffer (fmt: string, ...args: any[]) {
-    var parsed = parseBufferFormatCode(fmt);
-    var size = expectedBufferSize(fmt);
+    var parsed = parseBufferFormatCode(fmt, true);
+    var size = expectedBufferSize(fmt, true);
 
-    if (arguments.length !== (parsed.length + 1)) {
-        throw new ArgumentError('packArrayBuffer called with the wrong number of arguments for the format string');
-    }
+    // FIXME: needs a smart way to account for padding
+    // if (arguments.length !== (parsed.length + 1)) {
+    //     throw new ArgumentError('packArrayBuffer called with the wrong number of arguments for the format string');
+    // }
 
     var arrayBuffer = new ArrayBuffer(size);
     var view = new DataView(arrayBuffer);
 
     //Fill in all the data (always little endian format)
     var offset = 0;
+    var arg_idx = 0;
     for (let i = 0; i < parsed.length; ++i) {
         let curr = parsed[i];
-        let arg = arguments[i + 1];
+        let arg = arguments[arg_idx + 1];
 
         switch (curr.code) {
             case 'B':
-            if ((arguments[i + 1] <= 0xFF) && (arguments[i + 1] >= 0)){
+            if ((arguments[arg_idx + 1] <= 0xFF) && (arguments[arg_idx + 1] >= 0)){
                 view.setUint8(offset, arguments[i + 1]);
                 offset += 1;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid unsigned 8 bit integer");
             }
             break;
 
             case 'H':
-            if ((arguments[i + 1] <= 0xFFFF) && (arguments[i + 1] >= 0)){
+            if ((arguments[arg_idx + 1] <= 0xFFFF) && (arguments[arg_idx + 1] >= 0)){
                 view.setUint16(offset, arguments[i + 1], true);
                 offset += 2;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid unsigned 16 bit integer");
             }
             break;
 
             case 'L':
-            if ((arguments[i + 1] <= 0xFFFFFFFF) && (arguments[i + 1] >= 0)){
+            if ((arguments[arg_idx + 1] <= 0xFFFFFFFF) && (arguments[arg_idx + 1] >= 0)){
                 view.setUint32(offset, arguments[i + 1], true);
                 offset += 4;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid unsigned 32 bit integer");
             }
             break;
 
             case 'l':
-            if ((arguments[i + 1] <= 0x7FFFFFFF) && (arguments[i + 1] >= -2147483648)){
+            if ((arguments[arg_idx + 1] <= 0x7FFFFFFF) && (arguments[arg_idx + 1] >= -2147483648)){
                 view.setInt32(offset, arguments[i + 1], true);
                 offset += 4;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid signed 32 bit integer");
+            }
+            break;
+
+            case 'x':
+            for (let j = 0; j < curr.size; ++j) {
+                view.setUint8(offset++, 0);
             }
             break;
 
@@ -445,6 +466,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
             for (let j = 0; j < curr.size; ++j) {
                 view.setUint8(offset++, arg.charCodeAt(j));
             }
+            arg_idx += 1;
             break;
 
             default:
@@ -472,6 +494,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * - H: A 16 bit wide unsigned integer
  * - L: A 32 bit wide unsigned integer
  * - l: A 32 bit wide signed integer
+ * - [#]x: one or more padding bytes
  * - #s: A fixed length string.  # should be a decimal number, e.g. 5s or 18s
  * 
  * ## Exceptions
@@ -487,9 +510,10 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
     var parsed = parseBufferFormatCode(fmt);
     var i;
 
-    if (size !== buffer.byteLength) {
-        throw new ArgumentError('unpackArrayBuffer called on buffer with invalid size');
-    }
+    // FIXME: needs a smart way to account for padding
+    // if (size !== buffer.byteLength) {
+    //     throw new ArgumentError('unpackArrayBuffer called on buffer with invalid size');
+    // }
 
     var view = new DataView(buffer);
     var args = [];
@@ -522,6 +546,11 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
             offset += 4;
             break;
 
+            case 'x':
+            val = undefined;
+            offset += Math.max(entry.count, 1);
+            break;
+
             case 's':
             stringData = new Uint8Array(buffer.slice(offset, offset+entry.size));
             val = String.fromCharCode.apply(null, stringData);
@@ -532,7 +561,9 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
             throw new ArgumentError('Unknown format code in packArrayBuffer: ' + fmt[i]);
         }
 
-        args.push(val);
+        if (val){
+            args.push(val);
+        }
     }
 
     return args;

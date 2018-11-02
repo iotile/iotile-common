@@ -29,6 +29,32 @@ describe('namespace: Utilities, function: expectedBufferSize', function () {
     expect(size).toEqual(8);
   })
 
+  it('should create correct buffer sizes with padding bytes', function() {
+  	let size = Utilities.expectedBufferSize("H18x", true);
+    expect(size).toEqual(20);
+
+    size = Utilities.expectedBufferSize("H1x", true);
+    expect(size).toEqual(3);
+
+    size = Utilities.expectedBufferSize("8x", true);
+    expect(size).toEqual(8);
+
+    size = Utilities.expectedBufferSize("x", true);
+    expect(size).toEqual(1);
+
+    size = Utilities.expectedBufferSize("H18x");
+    expect(size).toEqual(2);
+
+    size = Utilities.expectedBufferSize("H1x");
+    expect(size).toEqual(2);
+
+    size = Utilities.expectedBufferSize("8x");
+    expect(size).toEqual(0);
+
+    size = Utilities.expectedBufferSize("x");
+    expect(size).toEqual(0);
+  })
+
   it('should calculate correct buffer sizes with string', function() {
   	let size = Utilities.expectedBufferSize("H18s");
     expect(size).toEqual(20);
@@ -38,15 +64,6 @@ describe('namespace: Utilities, function: expectedBufferSize', function () {
 
     size = Utilities.expectedBufferSize("8s");
     expect(size).toEqual(8);
-  })
-
-  it('should not allow counts in front of nonstrings', function(done) {
-  	try {
-      let size = Utilities.expectedBufferSize("18H");
-      done.fail("expectedBufferSize did not throw on count in front of nonstring");
-    } catch (err) {
-      done();
-    }
   })
 
   it('should require counts in front of strings', function(done) {
@@ -80,6 +97,15 @@ describe('namespace: Utilities, function: unpackArrayBuffer', function () {
 
   })
 
+  it('should unpack buffers with padding bytes, dropping the padding', function() {
+    let data = Uint8Array.from([18, 0, 0, 3, 0, 234, 0]); // Should drop padding bytes even if nonzero
+
+  	let [first, second] = Utilities.unpackArrayBuffer("B4xHx", data.buffer);
+
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
+  })
+
   it('should unpack signed ints from buffers', function() {
     let signedData = Int32Array.from([-1, -2, -3, -4, -5, -6, -7, -8, -9, -2147483648]);
 
@@ -105,6 +131,15 @@ describe('namespace: Utilities, function: packArrayBuffer', function () {
     expect(length).toEqual(18);
     expect(stringObject.length).toEqual(18);
     expect(stringObject).toEqual('ABCDEFGHIJKLMNOPQR');
+  })
+
+  it('should pack padding bytes into buffers', function() {
+  	let arrBuff = Utilities.packArrayBuffer("xH2xL", 18, 234);
+    let [first, second] = Utilities.unpackArrayBuffer("xH2xL", arrBuff); //The unpack functionality is checked in a separate unit test
+
+    expect(arrBuff.byteLength).toEqual((1+2+1+1+4));
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
   })
 
   it('should pack signed ints into buffers', function(){

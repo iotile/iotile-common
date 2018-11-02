@@ -29,6 +29,20 @@ describe('namespace: Utilities, function: expectedBufferSize', function () {
     expect(size).toEqual(8);
   })
 
+  it('should create correct buffer sizes with padding bytes', function() {
+  	let size = Utilities.expectedBufferSize("H18x");
+    expect(size).toEqual(20);
+
+    size = Utilities.expectedBufferSize("H1x");
+    expect(size).toEqual(3);
+
+    size = Utilities.expectedBufferSize("8x");
+    expect(size).toEqual(8);
+
+    size = Utilities.expectedBufferSize("x");
+    expect(size).toEqual(1);
+  })
+
   it('should calculate correct buffer sizes with string', function() {
   	let size = Utilities.expectedBufferSize("H18s");
     expect(size).toEqual(20);
@@ -40,7 +54,7 @@ describe('namespace: Utilities, function: expectedBufferSize', function () {
     expect(size).toEqual(8);
   })
 
-  it('should not allow counts in front of nonstrings', function(done) {
+  it('should not allow counts in front of nonstrings/padding bytes', function(done) {
   	try {
       let size = Utilities.expectedBufferSize("18H");
       done.fail("expectedBufferSize did not throw on count in front of nonstring");
@@ -80,6 +94,15 @@ describe('namespace: Utilities, function: unpackArrayBuffer', function () {
 
   })
 
+  it('should unpack buffers with padding bytes, dropping the padding', function() {
+    let data = Uint8Array.from([0, 18, 0, 3, 0, 234, 0]); // Should drop padding bytes even if nonzero
+
+  	let [first, second] = Utilities.unpackArrayBuffer("xB3xBx", data.buffer);
+
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
+  })
+
   it('should unpack signed ints from buffers', function() {
     let signedData = Int32Array.from([-1, -2, -3, -4, -5, -6, -7, -8, -9, -2147483648]);
 
@@ -105,6 +128,29 @@ describe('namespace: Utilities, function: packArrayBuffer', function () {
     expect(length).toEqual(18);
     expect(stringObject.length).toEqual(18);
     expect(stringObject).toEqual('ABCDEFGHIJKLMNOPQR');
+  })
+
+  it('should pack padding bytes into buffers', function() {
+    let arrBuff = Utilities.packArrayBuffer("H2xL", 18, 234);
+    let [first, second] = Utilities.unpackArrayBuffer("H2xL", arrBuff); //The unpack functionality is checked in a separate unit test
+
+    expect(arrBuff.byteLength).toEqual((2+1+1+4));
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
+
+    arrBuff = Utilities.packArrayBuffer("H2xLx", 18, 234);
+    [first, second] = Utilities.unpackArrayBuffer("H2xLx", arrBuff); //The unpack functionality is checked in a separate unit test
+
+    expect(arrBuff.byteLength).toEqual((1+2+1+1+4));
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
+
+  	arrBuff = Utilities.packArrayBuffer("xH2xL", 18, 234);
+    [first, second] = Utilities.unpackArrayBuffer("xH2xL", arrBuff); //The unpack functionality is checked in a separate unit test
+
+    expect(arrBuff.byteLength).toEqual((1+2+1+1+4));
+    expect(first).toEqual(18);
+    expect(second).toEqual(234);
   })
 
   it('should pack signed ints into buffers', function(){

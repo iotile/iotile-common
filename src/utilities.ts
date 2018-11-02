@@ -238,7 +238,7 @@ export function parseBufferFormatCode(fmt: string) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'B', size: 1});
+                parsed.push({count: 0, code:'B', size: 1, argumentsConsumed: 1});
                 break;
 
                 case 'H':
@@ -246,7 +246,7 @@ export function parseBufferFormatCode(fmt: string) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'H', size: 2});
+                parsed.push({count: 0, code:'H', size: 2, argumentsConsumed: 1});
                 break;
 
                 case 'L':
@@ -254,7 +254,7 @@ export function parseBufferFormatCode(fmt: string) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'L', size: 4});
+                parsed.push({count: 0, code:'L', size: 4, argumentsConsumed: 1});
                 break;
 
                 case 'l':
@@ -262,7 +262,12 @@ export function parseBufferFormatCode(fmt: string) {
                     throw new ArgumentError('Invalid count in format code that does not take a count: count = ' + count);
                 }
 
-                parsed.push({count: 0, code:'l', size: 4});
+                parsed.push({count: 0, code:'l', size: 4, argumentsConsumed: 1});
+                break;
+
+                case 'x':
+                let size = Math.max(count, 1);
+                parsed.push({count: count, code:'x', size: size , argumentsConsumed: 0});
                 break;
 
                 case 's':
@@ -270,7 +275,7 @@ export function parseBufferFormatCode(fmt: string) {
                     throw new ArgumentError('Invalid count in string that should be prefixed with a count: count = ' + count);
                 }
 
-                parsed.push({count: count, code:'s', size: count});
+                parsed.push({count: count, code:'s', size: count, argumentsConsumed: 1});
                 break;
 
                 default:
@@ -339,7 +344,7 @@ export function padString(input: string, pad: string, length: number) : string {
  * @param {string} fmt - The format we are trying to determine the size of 
  * @returns {number} The number of bytes required to store fmt
  */
-export function expectedBufferSize(fmt: string) {
+export function expectedBufferSize(fmt: string): number {
     var size = 0;
     var parsed = parseBufferFormatCode(fmt);
     var i;
@@ -348,6 +353,20 @@ export function expectedBufferSize(fmt: string) {
     //Calculate expected size
     for (i = 0; i < parsed.length; ++i) {
         size += parsed[i].size;
+    }
+
+    return size;
+}
+
+export function expectedArraySize(fmt: string): number {
+    var size = 0;
+    var parsed = parseBufferFormatCode(fmt);
+    var i;
+    var count = 0; //For accumulating counts like 18s
+    
+    //Calculate expected size
+    for (i = 0; i < parsed.length; ++i) {
+        size += parsed[i].argumentsConsumed;
     }
 
     return size;
@@ -387,8 +406,9 @@ export function expectedBufferSize(fmt: string) {
 export function packArrayBuffer (fmt: string, ...args: any[]) {
     var parsed = parseBufferFormatCode(fmt);
     var size = expectedBufferSize(fmt);
+    let argsConsumed = expectedArraySize(fmt);
 
-    if (arguments.length !== (parsed.length + 1)) {
+    if (arguments.length !== (argsConsumed + 1)) {
         throw new ArgumentError('packArrayBuffer called with the wrong number of arguments for the format string');
     }
 
@@ -397,44 +417,55 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
 
     //Fill in all the data (always little endian format)
     var offset = 0;
+    var arg_idx = 0;
     for (let i = 0; i < parsed.length; ++i) {
         let curr = parsed[i];
-        let arg = arguments[i + 1];
+        let arg = arguments[arg_idx + 1];
 
         switch (curr.code) {
             case 'B':
-            if ((arguments[i + 1] <= 0xFF) && (arguments[i + 1] >= 0)){
-                view.setUint8(offset, arguments[i + 1]);
+            if ((arguments[arg_idx + 1] <= 0xFF) && (arguments[arg_idx + 1] >= 0)){
+                view.setUint8(offset, arguments[arg_idx + 1]);
                 offset += 1;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid unsigned 8 bit integer");
             }
             break;
 
             case 'H':
-            if ((arguments[i + 1] <= 0xFFFF) && (arguments[i + 1] >= 0)){
-                view.setUint16(offset, arguments[i + 1], true);
+            if ((arguments[arg_idx + 1] <= 0xFFFF) && (arguments[arg_idx + 1] >= 0)){
+                view.setUint16(offset, arguments[arg_idx + 1], true);
                 offset += 2;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid unsigned 16 bit integer");
             }
             break;
 
             case 'L':
-            if ((arguments[i + 1] <= 0xFFFFFFFF) && (arguments[i + 1] >= 0)){
-                view.setUint32(offset, arguments[i + 1], true);
+            if ((arguments[arg_idx + 1] <= 0xFFFFFFFF) && (arguments[arg_idx + 1] >= 0)){
+                view.setUint32(offset, arguments[arg_idx + 1], true);
                 offset += 4;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid unsigned 32 bit integer");
             }
             break;
 
             case 'l':
-            if ((arguments[i + 1] <= 0x7FFFFFFF) && (arguments[i + 1] >= -2147483648)){
-                view.setInt32(offset, arguments[i + 1], true);
+            if ((arguments[arg_idx + 1] <= 0x7FFFFFFF) && (arguments[arg_idx + 1] >= -2147483648)){
+                view.setInt32(offset, arguments[arg_idx + 1], true);
                 offset += 4;
+                arg_idx += 1;
             } else {
                 throw new ArgumentError("Value must be a valid signed 32 bit integer");
+            }
+            break;
+
+            case 'x':
+            for (let j = 0; j < curr.size; ++j) {
+                view.setUint8(offset++, 0);
             }
             break;
 
@@ -445,6 +476,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
             for (let j = 0; j < curr.size; ++j) {
                 view.setUint8(offset++, arg.charCodeAt(j));
             }
+            arg_idx += 1;
             break;
 
             default:
@@ -472,6 +504,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * - H: A 16 bit wide unsigned integer
  * - L: A 32 bit wide unsigned integer
  * - l: A 32 bit wide signed integer
+ * - [#]x: one or more padding bytes
  * - #s: A fixed length string.  # should be a decimal number, e.g. 5s or 18s
  * 
  * ## Exceptions
@@ -522,6 +555,11 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
             offset += 4;
             break;
 
+            case 'x':
+            val = undefined;
+            offset += Math.max(entry.count, 1);
+            break;
+
             case 's':
             stringData = new Uint8Array(buffer.slice(offset, offset+entry.size));
             val = String.fromCharCode.apply(null, stringData);
@@ -532,7 +570,9 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
             throw new ArgumentError('Unknown format code in packArrayBuffer: ' + fmt[i]);
         }
 
-        args.push(val);
+        if (val != undefined){
+            args.push(val);
+        }
     }
 
     return args;

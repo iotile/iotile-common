@@ -515,7 +515,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * @param {ArrayBuffer} buffer The packed ArrayBuffer that should be decoded using fmt
  * @returns {number[]} A list of numbers decoded from the buffer using fmt
  */
-export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
+export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer | SharedArrayBuffer) {
     var size = expectedBufferSize(fmt);
     var parsed = parseBufferFormatCode(fmt);
     var i;

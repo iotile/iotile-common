@@ -30,7 +30,7 @@
   },
   "jest": {
     "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      ".(ts|tsx)": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     "moduleFileExtensions": [
@@ -42,16 +42,7 @@
       "/node_modules/",
       "/test/"
     ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 30,
-        "functions": 25,
-        "lines": 45,
-        "statements": 40
-      }
-    },
-    "collectCoverage": true,
-    "mapCoverage": true
+    "collectCoverage": true
   },
   "engines": {
     "node": ">=6.0"

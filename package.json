@@ -1,6 +1,6 @@
 {
   "name": "@iotile/iotile-common",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Common utilities for IoTile Packages and Applications",
   "main": "dist/iotile-common.umd.js",
   "module": "dist/iotile-common.es5.js",
@@ -30,7 +30,7 @@
   },
   "jest": {
     "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      ".(ts|tsx)": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     "moduleFileExtensions": [
@@ -42,16 +42,7 @@
       "/node_modules/",
       "/test/"
     ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 30,
-        "functions": 25,
-        "lines": 45,
-        "statements": 40
-      }
-    },
-    "collectCoverage": true,
-    "mapCoverage": true
+    "collectCoverage": true
   },
   "engines": {
     "node": ">=6.0"
@@ -69,7 +60,7 @@
     "@types/node": "^9.3.0",
     "cz-conventional-changelog": "^2.1.0",
     "gh-pages": "^1.0.0",
-    "jest": "^22.0.2",
+    "jest": "^23.6.0",
     "lodash.camelcase": "^4.3.0",
     "prettier": "^1.10.2",
     "rollup": "^0.54.0",
@@ -78,13 +69,17 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.10.0",
     "standard-version": "^4.0.0",
-    "ts-jest": "^22.0.0",
+    "ts-jest": "^23.10.5",
     "ts-node": "^4.1.0",
     "tslint": "^5.8.0",
     "tslint-config-prettier": "^1.1.0",
     "tslint-immutable": "^4.5.1",
     "typedoc": "^0.11.1",
-    "typescript": "^2.4.1"
+    "typescript": "^2.4.1",
+    "typescript-logging": "^0.6.3"
+  },
+  "peerDependencies": {
+    "typescript-logging": "^0.6.3"
   },
   "config": {
     "commitizen": {

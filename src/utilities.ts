@@ -515,7 +515,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * @param {ArrayBuffer} buffer The packed ArrayBuffer that should be decoded using fmt
  * @returns {number[]} A list of numbers decoded from the buffer using fmt
  */
-export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
+export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer | SharedArrayBuffer) {
     var size = expectedBufferSize(fmt);
     var parsed = parseBufferFormatCode(fmt);
     var i;
@@ -605,7 +605,7 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
  * @param {number} length The number of bytes to copy from src into dest.
  * @throws {InsufficientSpaceError} If there is not space in the destination buffer to hold the copied data.
  */
-export function copyArrayBuffer(dest: ArrayBuffer, src: ArrayBuffer, srcOffset: number, destOffset: number, length: number) {
+export function copyArrayBuffer(dest: ArrayBuffer, src: ArrayBuffer | SharedArrayBuffer, srcOffset: number, destOffset: number, length: number) {
     let srcArray = new Uint8Array(src, srcOffset, length);
     let dstArray = new Uint8Array(dest, 0);
 

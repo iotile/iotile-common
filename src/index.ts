@@ -1,5 +1,6 @@
 // Public classes.
 export {ObjectBase} from "./classes/all-base";
+export {LoggingBase} from "./classes/logging-base";
 export {ControllerBase} from "./classes/controller-base";
 export {ComponentBase} from "./classes/component-base";
 export * from "./classes/modal-base";

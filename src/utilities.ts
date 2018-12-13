@@ -605,7 +605,7 @@ export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer) {
  * @param {number} length The number of bytes to copy from src into dest.
  * @throws {InsufficientSpaceError} If there is not space in the destination buffer to hold the copied data.
  */
-export function copyArrayBuffer(dest: ArrayBuffer, src: ArrayBuffer, srcOffset: number, destOffset: number, length: number) {
+export function copyArrayBuffer(dest: ArrayBuffer, src: ArrayBuffer | SharedArrayBuffer, srcOffset: number, destOffset: number, length: number) {
     let srcArray = new Uint8Array(src, srcOffset, length);
     let dstArray = new Uint8Array(dest, 0);
 

@@ -1,3 +1,6 @@
+/**
+ * Legacy base object that assumes we are using angular logging
+ */
 export class ObjectBase {
     protected $injector: any;
     protected $log: any;

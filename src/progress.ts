@@ -24,6 +24,18 @@ export class ProgressNotifier {
     public addMessage(severity: MessageSeverity, message: string, priority: boolean = false) {
     }
 
+    public addError(message: string, priority: boolean = false) {
+        this.addMessage(MessageSeverity.Error, message, priority);
+    }
+
+    public addInfo(message: string, priority: boolean = false) {
+        this.addMessage(MessageSeverity.Info, message, priority);
+    }
+
+    public addWarning(message: string, priority: boolean = false) {
+        this.addMessage(MessageSeverity.Warn, message, priority);
+    }
+
     public fatalError(message: string) {
         
     }

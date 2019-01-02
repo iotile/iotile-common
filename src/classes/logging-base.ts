@@ -7,27 +7,37 @@ export class LoggingBase {
         this.category = category;
     }
 
-    protected logError(msg: MessageType, error?: ErrorType | undefined) {
-        if (error === undefined) {
-            error = null;
-        }
+    protected buildLogMessage(msg: string, extraArgs?: {} | any[]): MessageType {
+        if (extraArgs == null)
+            extraArgs = undefined;
 
-        this.category.error(msg, error);
+        return {
+            msg: msg,
+            data: extraArgs
+        };
     }
 
-    protected logDebug(msg: MessageType) {
-        this.category.debug(msg);
+    protected logException(msg: string, error: ErrorType, extraArgs?: {}) {
+        this.category.error(this.buildLogMessage(msg, extraArgs), error);
     }
 
-    protected logInfo(msg: MessageType) {
-        this.category.info(msg);
+    protected logError(msg: string, extraArgs?: {} | any[]) {
+        this.category.error(this.buildLogMessage(msg, extraArgs), null);
     }
 
-    protected logTrace(msg: MessageType) {
-        this.category.trace(msg);
+    protected logDebug(msg: string, extraArgs?: {} | any[]) {
+        this.category.debug(this.buildLogMessage(msg, extraArgs));
     }
 
-    protected logWarning(msg: MessageType) {
-        this.category.warn(msg);
+    protected logInfo(msg: string, extraArgs?: {} | any[]) {
+        this.category.info(this.buildLogMessage(msg, extraArgs));
+    }
+
+    protected logTrace(msg: string, extraArgs?: {} | any[]) {
+        this.category.trace(this.buildLogMessage(msg, extraArgs));
+    }
+
+    protected logWarning(msg: string, extraArgs?: {} | any[]) {
+        this.category.warn(this.buildLogMessage(msg, extraArgs));
     }
 }

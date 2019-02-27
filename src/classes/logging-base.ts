@@ -7,9 +7,16 @@ export class LoggingBase {
         this.category = category;
     }
 
-    // WARNING: This will override the entire category configuration, not just the LogLevel.
-    // TODO: Keep current config settings and only update LogLevel. It is not apparent how
-    // to do this and may require a PR for https://github.com/mreuvers/typescript-logging
+    /**
+     * @param level
+     * @param applyChildren default: fase. If set to `true` then the level will be set for all
+     * child categories.
+     * 
+     * @description WARNING: This will override the entire category configuration, not just the LogLevel.
+     * 
+     * @todo Keep current config settings and only update LogLevel. It is not apparent how 
+     * to do this and may require a PR for https://github.com/mreuvers/typescript-logging
+     */
     protected setLogLevel(level: LogLevel, applyChildren: boolean = false) {
         CategoryServiceFactory.setConfigurationCategory(new CategoryConfiguration(level), this.category, applyChildren);
     }

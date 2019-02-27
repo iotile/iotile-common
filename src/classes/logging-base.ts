@@ -12,7 +12,8 @@ export class LoggingBase {
      * @param applyChildren default: fase. If set to `true` then the level will be set for all
      * child categories.
      * 
-     * @description WARNING: This will override the entire category configuration, not just the LogLevel.
+     * @description **WARNING**: This will override the entire category configuration, not just the LogLevel.
+     * **DO NOT** use in production.
      * 
      * @todo Keep current config settings and only update LogLevel. It is not apparent how 
      * to do this and may require a PR for https://github.com/mreuvers/typescript-logging

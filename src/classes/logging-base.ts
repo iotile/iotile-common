@@ -1,10 +1,25 @@
-import { Category, MessageType, ErrorType } from "typescript-logging";
+import { Category, MessageType, ErrorType, CategoryServiceFactory, CategoryConfiguration, LogLevel } from "typescript-logging";
 
 export class LoggingBase {
     private category: Category;
 
     constructor(category: Category) {
         this.category = category;
+    }
+
+    /**
+     * @param level
+     * @param applyChildren default: fase. If set to `true` then the level will be set for all
+     * child categories.
+     * 
+     * @description **WARNING**: This will override the entire category configuration, not just the LogLevel.
+     * **DO NOT** use in production.
+     * 
+     * @todo Keep current config settings and only update LogLevel. It is not apparent how 
+     * to do this and may require a PR for https://github.com/mreuvers/typescript-logging
+     */
+    protected setLogLevel(level: LogLevel, applyChildren: boolean = false) {
+        CategoryServiceFactory.setConfigurationCategory(new CategoryConfiguration(level), this.category, applyChildren);
     }
 
     protected buildLogMessage(msg: string, extraArgs?: {} | any[]): MessageType {

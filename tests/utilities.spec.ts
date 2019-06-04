@@ -148,6 +148,18 @@ describe('namespace: Utilities, function: convertVariableLengthFormatCode', func
   })
 })
 
+describe('namespace: Utilities, function: stringToBuffer', function () {
+  it('converts a string to an ArrayBuffer', function() {
+    const str = '23EF';
+    const buffer = new Uint8Array(Utilities.stringToBuffer(str));
+    expect(buffer.length).toEqual(4);
+    expect(buffer[0]).toEqual(0x32);
+    expect(buffer[1]).toEqual(0x33);
+    expect(buffer[2]).toEqual(0x45);
+    expect(buffer[3]).toEqual(0x46);
+  })
+})
+
 describe('namespace: Utilities, function: unpackArrayBuffer', function () {
   it('should unpack strings from buffers', function() {
     let data = Uint8Array.from([18, 0, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82]);

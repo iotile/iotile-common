@@ -237,6 +237,27 @@ export function convertVariableLengthFormatCode(fmt: string, buffer: ArrayBuffer
 
 /**
  * @ngdoc object
+ * @name Utilities.function:stringToBuffer
+ * @description
+ * Takes a string and returns an ArrayBuffer containing each character's
+ * char code value.
+ *
+ * @param {string} str - The string to convert
+ * 
+ * @returns {ArrayBuffer}
+ */
+export function stringToBuffer(str: string): ArrayBuffer {
+    const buffer = new Uint8Array(str.length);
+
+    for (let i = 0; i < str.length; i++) {
+        buffer[i] = str.charCodeAt(i);
+    }
+
+    return buffer.buffer as ArrayBuffer;
+}
+
+/**
+ * @ngdoc object
  * @name Utilities.function:parseBufferFormatCode
  * @description
  * Parse a string format code describing the packing of a binary buffer
@@ -338,7 +359,6 @@ export function parseBufferFormatCode(fmt: string) {
  * @param {number} length The length of the final string you want.  
  * @returns {string} The correctgly padded string.
  */
-
 export function padString(input: string, pad: string, length: number) : string {
     if (input.length === length) {
         return input;
@@ -365,7 +385,6 @@ export function padString(input: string, pad: string, length: number) : string {
  * @param {number} length The length of the final buffer you want.  
  * @returns {ArrayBuffer} The correctly padded ArrayBuffer.
  */
-
 export function padArrayBuffer(input: ArrayBuffer, length: number) : ArrayBuffer {
     if (input.byteLength === length) {
         return input;
@@ -388,7 +407,6 @@ export function padArrayBuffer(input: ArrayBuffer, length: number) : ArrayBuffer
  * @param {ArrayBuffer} buffer2 The second ArrayBuffer.
  * @returns {ArrayBuffer} The resulting combined ArrayBuffer.
  */
-
 export function appendArrayBuffer(buffer1: ArrayBuffer, buffer2: ArrayBuffer) : ArrayBuffer {
  
     const result = new ArrayBuffer(buffer1.byteLength + buffer2.byteLength);

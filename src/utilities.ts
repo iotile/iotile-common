@@ -203,6 +203,40 @@ export function mapStreamName(streamName: string) {
 
 /**
  * @ngdoc object
+ * @name Utilities.function:convertVariableLengthFormatCode
+ * @description
+ * Convert the variable length byte array format code ('V') into a fixed length
+ * format code ('#s') based on the size of the provided buffer and whether or not this
+ * is for packing (buffer is the last argument to pack) or unpacking (buffer is the entire
+ * response).
+ * 
+ * ## See Also
+ * {@link Utilities.function:packArrayBuffer Utilities.packArrayBuffer}
+ * 
+ * {@link Utilities.function:unpackArrayBuffer Utilities.unpackArrayBuffer}
+ *
+ * @param {string} fmt - The format code to convert 
+ * @param {ArrayBuffer} buffer - Either the variable length arg to pack or the response buffer
+ * @param {boolean} pack - Whether this is for packing (true) or unpacking (false)
+ * 
+ * @returns {string} - The converted format code
+ */
+export function convertVariableLengthFormatCode(fmt: string, buffer: ArrayBuffer, pack: boolean): string {
+    if (fmt[fmt.length - 1] !== 'V') {
+        return fmt
+    }
+    fmt = fmt.slice(0, -1);
+
+    const fixedSize = expectedBufferSize(fmt);
+    const varSize = pack ? buffer.byteLength : buffer.byteLength - fixedSize;
+
+    fmt = fmt + varSize + 's';
+
+    return fmt;
+}
+
+/**
+ * @ngdoc object
  * @name Utilities.function:parseBufferFormatCode
  * @description
  * Parse a string format code describing the packing of a binary buffer
@@ -392,7 +426,6 @@ export function expectedBufferSize(fmt: string): number {
     var size = 0;
     var parsed = parseBufferFormatCode(fmt);
     var i;
-    var count = 0; //For accumulating counts like 18s
     
     //Calculate expected size
     for (i = 0; i < parsed.length; ++i) {
@@ -440,6 +473,7 @@ export function expectedArraySize(fmt: string): number {
  *   UPDATE: As of v0.2 '#s' may also represent an ArrayBuffer with a bytelength given by the
  *   number preceding 's'. If the bytelength of the ArrayBuffer argument is shorter than what
  *   is specified, the ArrayBuffer will NOT be padded and an error will be thrown.
+ * - V: A variable length byte array. This must come as the last format code
  * 
  * ## Exceptions
  * - **{@link type:ArgumentError} If there is an unknown format string code or the string
@@ -451,6 +485,9 @@ export function expectedArraySize(fmt: string): number {
  * @returns {ArrayBuffer} The packed resulting binary array buffer
  */
 export function packArrayBuffer (fmt: string, ...args: any[]) {
+    if (fmt[fmt.length - 1] === 'V') {
+        fmt = convertVariableLengthFormatCode(fmt, args[args.length - 1] as ArrayBuffer, true)
+    }
     var parsed = parseBufferFormatCode(fmt);
     var size = expectedBufferSize(fmt);
     let argsConsumed = expectedArraySize(fmt);
@@ -562,6 +599,8 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * - l: A 32 bit wide signed integer
  * - [#]x: one or more padding bytes
  * - #s: A fixed length string.  # should be a decimal number, e.g. 5s or 18s
+ * - V: A variable length byte array. This must come as the last format code.
+ *   NOTE: Data upacked from a 'V' code will be returned as a string.
  * 
  * ## Exceptions
  * - **{@link type:ArgumentError} If there is an unknown format string code or the string
@@ -572,6 +611,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * @returns {number[]} A list of numbers decoded from the buffer using fmt
  */
 export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer | SharedArrayBuffer) {
+    fmt = convertVariableLengthFormatCode(fmt, buffer as ArrayBuffer, false);
     var size = expectedBufferSize(fmt);
     var parsed = parseBufferFormatCode(fmt);
     var i;

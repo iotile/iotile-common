@@ -323,6 +323,50 @@ export function padString(input: string, pad: string, length: number) : string {
 
 /**
  * @ngdoc object
+ * @name Utilities.function:padArrayBuffer
+ * @description
+ * Pad a string by appending null bytes to meet a fixed length
+ * 
+ * @param {ArrayBuffer} input The buffer we are trying to pad.
+ * @param {number} length The length of the final buffer you want.  
+ * @returns {ArrayBuffer} The correctly padded ArrayBuffer.
+ */
+
+export function padArrayBuffer(input: ArrayBuffer, length: number) : ArrayBuffer {
+    if (input.byteLength === length) {
+        return input;
+    }
+
+    if (input.byteLength > length) {
+        throw new ArgumentError("ArrayBuffer passed to padArrayBuffer is longer than the desired length: ArrayBuffer = " + input);
+    }
+
+    return appendArrayBuffer(input, new ArrayBuffer(length - input.byteLength));
+}
+
+/**
+ * @ngdoc object
+ * @name Utilities.function:appendArrayBuffer
+ * @description
+ * Append one ArrayBuffer to the end of another.
+ * 
+ * @param {ArrayBuffer} buffer1 The first ArrayBuffer.
+ * @param {ArrayBuffer} buffer2 The second ArrayBuffer.
+ * @returns {ArrayBuffer} The resulting combined ArrayBuffer.
+ */
+
+export function appendArrayBuffer(buffer1: ArrayBuffer, buffer2: ArrayBuffer) : ArrayBuffer {
+ 
+    const result = new ArrayBuffer(buffer1.byteLength + buffer2.byteLength);
+
+    copyArrayBuffer(result, buffer1, 0, 0, buffer1.byteLength);
+    copyArrayBuffer(result, buffer2, 0, buffer1.byteLength, buffer2.byteLength);
+
+    return result;
+}
+
+/**
+ * @ngdoc object
  * @name Utilities.function:expectedBufferSize
  * @description
  * Determine how large a buffer is given its binary format string
@@ -393,6 +437,9 @@ export function expectedArraySize(fmt: string): number {
  * - #s: A fixed length string with length given by the number preceding s, e.g. 5s for a 5 
  *   character string.  If the string argument is shorter than what is specified, it is padded
  *   with null characters.
+ *   UPDATE: As of v0.2 '#s' may also represent an ArrayBuffer with a bytelength given by the
+ *   number preceding 's'. If the bytelength of the ArrayBuffer argument is shorter than what
+ *   is specified, the ArrayBuffer will NOT be padded and an error will be thrown.
  * 
  * ## Exceptions
  * - **{@link type:ArgumentError} If there is an unknown format string code or the string
@@ -470,12 +517,21 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
             break;
 
             case 's':
-            //If required add padding with nulls out to the fixed length specified
-            arg = padString(arg, '\0', curr.size);
-            
-            for (let j = 0; j < curr.size; ++j) {
-                view.setUint8(offset++, arg.charCodeAt(j));
+            if (typeof arg === 'string') {
+                //If required add padding with nulls out to the fixed length specified
+                arg = padString(arg, '\0', curr.size);
+
+                for (let j = 0; j < curr.size; ++j) {
+                    view.setUint8(offset++, arg.charCodeAt(j));
+                }
+            } else if (arg instanceof ArrayBuffer) {
+                if (arg.byteLength !== curr.size) {
+                    throw new ArgumentError(`ArrayBuffer size does not match format code: expected=${curr.size}, actual=${arg.byteLength}`)
+                }
+                copyArrayBuffer(arrayBuffer, arg, 0, offset, curr.size);
+                offset += curr.size;
             }
+            
             arg_idx += 1;
             break;
 

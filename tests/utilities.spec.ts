@@ -82,6 +82,52 @@ describe('namespace: Utilities, function: expectedBufferSize', function () {
   })
 });
 
+describe('namespace: Utilities, function: appendArrayBuffer', function () {
+  it('appends one buffer to another', function() {
+    const buffer1 = new Uint8Array([0x32, 0x33]).buffer;
+    const buffer2 = new Uint8Array([0x45, 0x46, 0x47]).buffer;
+    const combined = Utilities.appendArrayBuffer(buffer1 as any, buffer2 as any);
+    const [combinedStr] = Utilities.unpackArrayBuffer(buffer1.byteLength + buffer2.byteLength + 's', combined); //The unpack functionality is checked in a separate unit test
+
+    expect(combined.byteLength).toEqual(buffer1.byteLength + buffer2.byteLength);
+    expect(combinedStr).toEqual('23EFG')
+  })
+})
+
+describe('namespace: Utilities, function: padArrayBuffer', function () {
+  it('pads null bytes to an ArrayBuffer', function() {
+    const buffer = new Uint8Array([0x32, 0x33]).buffer;
+    const padLength = 5;
+    const padded = Utilities.padArrayBuffer(buffer as any, padLength);
+
+    expect(padded.byteLength).toEqual(padLength);
+
+    let paddedWithZeros = true;
+
+    const bufferU8 = new Uint8Array(buffer);
+    const paddedU8 = new Uint8Array(padded);
+    for (let i = 0; i < padLength; i++) {
+      if (i < bufferU8.length && bufferU8[i] !== paddedU8[i]) {
+        paddedWithZeros = false
+      } else if (i >= bufferU8.length && paddedU8[i] !== 0) {
+        paddedWithZeros = false
+      }
+    }
+
+    expect(paddedWithZeros).toEqual(true)
+  })
+
+  it('throws an error if input is longer than padded length', function() {
+    
+    const buffer = new Uint8Array([0x32, 0x33]).buffer;
+    const padLength = 1;
+
+    expect(function() {
+      Utilities.padArrayBuffer(buffer as any, padLength);
+    }).toThrow();
+  })
+})
+
 describe('namespace: Utilities, function: unpackArrayBuffer', function () {
   it('should unpack strings from buffers', function() {
     let data = Uint8Array.from([18, 0, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82]);
@@ -128,6 +174,17 @@ describe('namespace: Utilities, function: packArrayBuffer', function () {
     expect(length).toEqual(18);
     expect(stringObject.length).toEqual(18);
     expect(stringObject).toEqual('ABCDEFGHIJKLMNOPQR');
+  })
+
+  it('should pack ArrayBuffers into buffers', function() {
+    let argBuff = new Uint8Array([0x32, 0x33, 0x45, 0x46]).buffer;
+  	let arrBuff = Utilities.packArrayBuffer("H4sB", 18, argBuff, 5);
+    let [length, stringObject, footer] = Utilities.unpackArrayBuffer("H4sB", arrBuff); //The unpack functionality is checked in a separate unit test
+
+    expect(length).toEqual(18);
+    expect(stringObject.length).toEqual(4);
+    expect(stringObject).toEqual('23EF');
+    expect(footer).toEqual(5);
   })
 
   it('should pack padding bytes into buffers', function() {

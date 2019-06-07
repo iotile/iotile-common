@@ -235,6 +235,23 @@ export function convertVariableLengthFormatCode(fmt: string, buffer: ArrayBuffer
     return fmt;
 }
 
+
+/**
+ * @ngdoc object
+ * @name Utilities.function:toUint32
+ * @description
+ * Takes a number and returns the value as a Uint32
+ * See: http://2ality.com/2012/02/js-integers.html
+ * See also: https://stackoverflow.com/questions/22335853/hack-to-convert-javascript-number-to-uint32
+ *
+ * @param {number} num - The number to convert
+ * 
+ * @returns {Uint32}
+ */
+export function toUint32(num: number): number {
+    return num >>> 0;
+}
+
 /**
  * @ngdoc object
  * @name Utilities.function:stringToBuffer

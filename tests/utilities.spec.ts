@@ -160,6 +160,16 @@ describe('namespace: Utilities, function: stringToBuffer', function () {
   })
 })
 
+describe('namespace: Utilities, function: toUint32', function () {
+  it('converts a number to Uint32 format', function() {
+    const num = Number.parseInt("0xFF") << 24
+    const Int32Str = num.toString(16);
+    const Uint32Str = Utilities.toUint32(num).toString(16);
+    expect(Int32Str).toEqual("-1000000");
+    expect(Uint32Str).toEqual("ff000000");
+  })
+})
+
 describe('namespace: Utilities, function: unpackArrayBuffer', function () {
   it('should unpack strings from buffers', function() {
     let data = Uint8Array.from([18, 0, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82]);

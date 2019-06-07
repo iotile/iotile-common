@@ -203,6 +203,78 @@ export function mapStreamName(streamName: string) {
 
 /**
  * @ngdoc object
+ * @name Utilities.function:convertVariableLengthFormatCode
+ * @description
+ * Convert the variable length byte array format code ('V') into a fixed length
+ * format code ('#s') based on the size of the provided buffer and whether or not this
+ * is for packing (buffer is the last argument to pack) or unpacking (buffer is the entire
+ * response).
+ * 
+ * ## See Also
+ * {@link Utilities.function:packArrayBuffer Utilities.packArrayBuffer}
+ * 
+ * {@link Utilities.function:unpackArrayBuffer Utilities.unpackArrayBuffer}
+ *
+ * @param {string} fmt - The format code to convert 
+ * @param {ArrayBuffer} buffer - Either the variable length arg to pack or the response buffer
+ * @param {boolean} pack - Whether this is for packing (true) or unpacking (false)
+ * 
+ * @returns {string} - The converted format code
+ */
+export function convertVariableLengthFormatCode(fmt: string, buffer: ArrayBuffer, pack: boolean): string {
+    if (fmt[fmt.length - 1] !== 'V') {
+        return fmt
+    }
+    fmt = fmt.slice(0, -1);
+
+    const fixedSize = expectedBufferSize(fmt);
+    const varSize = pack ? buffer.byteLength : buffer.byteLength - fixedSize;
+
+    fmt = fmt + varSize + 's';
+
+    return fmt;
+}
+
+
+/**
+ * @ngdoc object
+ * @name Utilities.function:toUint32
+ * @description
+ * Takes a number and returns the value as a Uint32
+ * See: http://2ality.com/2012/02/js-integers.html
+ * See also: https://stackoverflow.com/questions/22335853/hack-to-convert-javascript-number-to-uint32
+ *
+ * @param {number} num - The number to convert
+ * 
+ * @returns {Uint32}
+ */
+export function toUint32(num: number): number {
+    return num >>> 0;
+}
+
+/**
+ * @ngdoc object
+ * @name Utilities.function:stringToBuffer
+ * @description
+ * Takes a string and returns an ArrayBuffer containing each character's
+ * char code value.
+ *
+ * @param {string} str - The string to convert
+ * 
+ * @returns {ArrayBuffer}
+ */
+export function stringToBuffer(str: string): ArrayBuffer {
+    const buffer = new Uint8Array(str.length);
+
+    for (let i = 0; i < str.length; i++) {
+        buffer[i] = str.charCodeAt(i);
+    }
+
+    return buffer.buffer as ArrayBuffer;
+}
+
+/**
+ * @ngdoc object
  * @name Utilities.function:parseBufferFormatCode
  * @description
  * Parse a string format code describing the packing of a binary buffer
@@ -304,7 +376,6 @@ export function parseBufferFormatCode(fmt: string) {
  * @param {number} length The length of the final string you want.  
  * @returns {string} The correctgly padded string.
  */
-
 export function padString(input: string, pad: string, length: number) : string {
     if (input.length === length) {
         return input;
@@ -319,6 +390,48 @@ export function padString(input: string, pad: string, length: number) : string {
     }
 
     return input;
+}
+
+/**
+ * @ngdoc object
+ * @name Utilities.function:padArrayBuffer
+ * @description
+ * Pad a string by appending null bytes to meet a fixed length
+ * 
+ * @param {ArrayBuffer} input The buffer we are trying to pad.
+ * @param {number} length The length of the final buffer you want.  
+ * @returns {ArrayBuffer} The correctly padded ArrayBuffer.
+ */
+export function padArrayBuffer(input: ArrayBuffer, length: number) : ArrayBuffer {
+    if (input.byteLength === length) {
+        return input;
+    }
+
+    if (input.byteLength > length) {
+        throw new ArgumentError("ArrayBuffer passed to padArrayBuffer is longer than the desired length: ArrayBuffer = " + input);
+    }
+
+    return appendArrayBuffer(input, new ArrayBuffer(length - input.byteLength));
+}
+
+/**
+ * @ngdoc object
+ * @name Utilities.function:appendArrayBuffer
+ * @description
+ * Append one ArrayBuffer to the end of another.
+ * 
+ * @param {ArrayBuffer} buffer1 The first ArrayBuffer.
+ * @param {ArrayBuffer} buffer2 The second ArrayBuffer.
+ * @returns {ArrayBuffer} The resulting combined ArrayBuffer.
+ */
+export function appendArrayBuffer(buffer1: ArrayBuffer, buffer2: ArrayBuffer) : ArrayBuffer {
+ 
+    const result = new ArrayBuffer(buffer1.byteLength + buffer2.byteLength);
+
+    copyArrayBuffer(result, buffer1, 0, 0, buffer1.byteLength);
+    copyArrayBuffer(result, buffer2, 0, buffer1.byteLength, buffer2.byteLength);
+
+    return result;
 }
 
 /**
@@ -348,7 +461,6 @@ export function expectedBufferSize(fmt: string): number {
     var size = 0;
     var parsed = parseBufferFormatCode(fmt);
     var i;
-    var count = 0; //For accumulating counts like 18s
     
     //Calculate expected size
     for (i = 0; i < parsed.length; ++i) {
@@ -393,6 +505,10 @@ export function expectedArraySize(fmt: string): number {
  * - #s: A fixed length string with length given by the number preceding s, e.g. 5s for a 5 
  *   character string.  If the string argument is shorter than what is specified, it is padded
  *   with null characters.
+ *   UPDATE: As of v0.2 '#s' may also represent an ArrayBuffer with a bytelength given by the
+ *   number preceding 's'. If the bytelength of the ArrayBuffer argument is shorter than what
+ *   is specified, the ArrayBuffer will NOT be padded and an error will be thrown.
+ * - V: A variable length byte array. This must come as the last format code
  * 
  * ## Exceptions
  * - **{@link type:ArgumentError} If there is an unknown format string code or the string
@@ -404,6 +520,9 @@ export function expectedArraySize(fmt: string): number {
  * @returns {ArrayBuffer} The packed resulting binary array buffer
  */
 export function packArrayBuffer (fmt: string, ...args: any[]) {
+    if (fmt[fmt.length - 1] === 'V') {
+        fmt = convertVariableLengthFormatCode(fmt, args[args.length - 1] as ArrayBuffer, true)
+    }
     var parsed = parseBufferFormatCode(fmt);
     var size = expectedBufferSize(fmt);
     let argsConsumed = expectedArraySize(fmt);
@@ -470,12 +589,21 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
             break;
 
             case 's':
-            //If required add padding with nulls out to the fixed length specified
-            arg = padString(arg, '\0', curr.size);
-            
-            for (let j = 0; j < curr.size; ++j) {
-                view.setUint8(offset++, arg.charCodeAt(j));
+            if (typeof arg === 'string') {
+                //If required add padding with nulls out to the fixed length specified
+                arg = padString(arg, '\0', curr.size);
+
+                for (let j = 0; j < curr.size; ++j) {
+                    view.setUint8(offset++, arg.charCodeAt(j));
+                }
+            } else if (arg instanceof ArrayBuffer) {
+                if (arg.byteLength !== curr.size) {
+                    throw new ArgumentError(`ArrayBuffer size does not match format code: expected=${curr.size}, actual=${arg.byteLength}`)
+                }
+                copyArrayBuffer(arrayBuffer, arg, 0, offset, curr.size);
+                offset += curr.size;
             }
+            
             arg_idx += 1;
             break;
 
@@ -506,6 +634,8 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * - l: A 32 bit wide signed integer
  * - [#]x: one or more padding bytes
  * - #s: A fixed length string.  # should be a decimal number, e.g. 5s or 18s
+ * - V: A variable length byte array. This must come as the last format code.
+ *   NOTE: Data upacked from a 'V' code will be returned as a string.
  * 
  * ## Exceptions
  * - **{@link type:ArgumentError} If there is an unknown format string code or the string
@@ -516,6 +646,7 @@ export function packArrayBuffer (fmt: string, ...args: any[]) {
  * @returns {number[]} A list of numbers decoded from the buffer using fmt
  */
 export function unpackArrayBuffer(fmt: string, buffer: ArrayBuffer | SharedArrayBuffer) {
+    fmt = convertVariableLengthFormatCode(fmt, buffer as ArrayBuffer, false);
     var size = expectedBufferSize(fmt);
     var parsed = parseBufferFormatCode(fmt);
     var i;

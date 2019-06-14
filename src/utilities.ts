@@ -230,7 +230,9 @@ export function convertVariableLengthFormatCode(fmt: string, buffer: ArrayBuffer
     const fixedSize = expectedBufferSize(fmt);
     const varSize = pack ? buffer.byteLength : buffer.byteLength - fixedSize;
 
-    fmt = fmt + varSize + 's';
+    if (varSize > 0) {
+        fmt = fmt + varSize + 's';
+    }
 
     return fmt;
 }

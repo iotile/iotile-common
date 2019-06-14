@@ -146,6 +146,14 @@ describe('namespace: Utilities, function: convertVariableLengthFormatCode', func
     const convertedFmt = Utilities.convertVariableLengthFormatCode(fmt, new ArrayBuffer(6), false);
     expect(convertedFmt).toEqual('BB4s');
   })
+
+  it('should not return a string format if the count is 0', function() {
+    const fmt = 'BBV';
+    const convertedFmt = Utilities.convertVariableLengthFormatCode(fmt, new ArrayBuffer(2), false);
+    expect(convertedFmt).toEqual('BB');
+  })
+
+  
 })
 
 describe('namespace: Utilities, function: stringToBuffer', function () {

@@ -352,3 +352,19 @@ describe('namespace: Utilities, function: numberToHexString', function () {
     expect(slug3).toBe('0000abcdef12');
   })
 });
+
+describe('namespace: Utilities, function: base64ToArrayBuffer, arrayBufferToBase64', function () {
+  it('should correctly convert', function() {
+    let string = "AgEaCv9MABAFAxxEr9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  	
+    let buffer = Utilities.base64ToArrayBuffer(string);
+
+    let u8array = new Uint8Array(buffer);
+
+    expect(u8array[13]).toBe(208);
+    
+    let convertedString = Utilities.arrayBufferToBase64(buffer);
+
+    expect(convertedString).toEqual(string)
+  })
+});

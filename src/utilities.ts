@@ -758,7 +758,7 @@ export function copyArrayBuffer(dest: ArrayBuffer, src: ArrayBuffer | SharedArra
  * @param {string} encodedString The base 64 encoded string
  * @returns {ArrayBuffer} The decoded ArrayBuffer
  */
-export function base64ToArrayBuffer(encodedString: string) {
+export function base64ToArrayBuffer(encodedString: string): ArrayBuffer {
     var raw = window.atob(encodedString);
     var rawLength = raw.length;
     var rawArray = new ArrayBuffer(rawLength);
@@ -769,4 +769,17 @@ export function base64ToArrayBuffer(encodedString: string) {
     }
 
     return rawArray;
+}
+
+/**
+ * @ngdoc object
+ * @name Utilities.object:arrayBufferToBase64
+ * @description
+ * Encode an ArrayBuffer to a Base 64 encoded string
+ * 
+ * @param {ArrayBuffer} buffer The ArrayBuffer
+ * @returns {ArrayBuffer} The Base 64 encoded string
+ */
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    return window.btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
 }
